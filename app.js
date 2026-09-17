@@ -1,23 +1,24 @@
-window.addEventListener('DOMContentLoaded', () => {
+// 初始化裝置選單
+document.addEventListener('DOMContentLoaded', async () => {
   const videoSelect = document.getElementById('video-select');
   const audioSelect = document.getElementById('audio-select');
   const connectBtn = document.getElementById('connect-btn');
-  const statusText = document.getElementById('status');
+  const statusTxt = document.getElementById('status');
 
-  let currentRoom = null;
+  // 取得 LiveKit 引用（同時相容 UMD CDN 與本地加載）
+  const livekitSDK = window.LiveKitClient || window.LiveKit;
 
   async function getDevices() {
-    // 檢查本地的 LiveKit SDK 是否成功載入
-    if (typeof LiveKit === 'undefined') {
-      alert("livekit.js 尚未加載完成，請確認 livekit.js 已成功上傳至 GitHub 專案中。");
+    if (!livekitSDK) {
+      alert('LiveKit SDK 載入失敗，請檢查網路連線。');
       return;
     }
 
     try {
-      // 主動請求相機與麥克風授權 (跳出 iOS 系統彈窗)
+      // 請求媒體存取權限以取得完整裝置列表
       await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       
-      const devices = await LiveKit.Room.getLocalDevices();
+      const devices = await navigator.mediaDevices.enumerateDevices();
       
       videoSelect.innerHTML = '<option value="">請選擇相機</option>';
       audioSelect.innerHTML = '<option value="">請選擇麥克風</option>';
@@ -25,66 +26,24 @@ window.addEventListener('DOMContentLoaded', () => {
       devices.forEach(device => {
         const option = document.createElement('option');
         option.value = device.deviceId;
-        option.text = device.label || `${device.kind} (${device.deviceId.slice(0, 5)}...)`;
         
         if (device.kind === 'videoinput') {
+          option.text = device.label || `相機 ${videoSelect.length}`;
           videoSelect.appendChild(option);
         } else if (device.kind === 'audioinput') {
+          option.text = device.label || `麥克風 ${audioSelect.length}`;
           audioSelect.appendChild(option);
         }
       });
 
-      statusText.innerText = "狀態：已取得裝置清單";
+      statusTxt.textContent = '狀態：已順利讀取鏡頭與麥克風列表';
     } catch (err) {
       console.error(err);
-      alert("無法取得授權或裝置：" + err.message);
+      statusTxt.textContent = '狀態：無法取得裝置權限，請確認瀏覽器授權。';
     }
   }
 
-  videoSelect.addEventListener('focus', getDevices);
-  audioSelect.addEventListener('focus', getDevices);
-
-  connectBtn.addEventListener('click', async () => {
-    if (typeof LiveKit === 'undefined') {
-      alert("LiveKit SDK 未成功載入！");
-      return;
-    }
-
-    const selectedVideoId = videoSelect.value;
-    const selectedAudioId = audioSelect.value;
-
-    if (!selectedVideoId || !selectedAudioId) {
-      alert("請先選擇相機與麥克風來源！");
-      return;
-    }
-
-    statusText.innerText = "狀態：連線中...";
-
-    try {
-      // 請將下方填入你的 LiveKit Server WebSocket 網址與連接 Token
-      const wsUrl = "wss://YOUR_LIVEKIT_SERVER_URL";
-      const token = "YOUR_LIVEKIT_TOKEN";
-
-      const room = new LiveKit.Room();
-      currentRoom = room;
-
-      room.on(LiveKit.RoomEvent.TrackSubscribed, (track, publication, participant) => {
-        if (track.kind === LiveKit.Track.Kind.Audio) {
-          const audioElement = document.getElementById('remote-audio');
-          track.attach(audioElement);
-        }
-      });
-
-      await room.connect(wsUrl, token);
-
-      await room.localParticipant.setCameraEnabled(true, { deviceId: selectedVideoId });
-      await room.localParticipant.setMicrophoneEnabled(true, { deviceId: selectedAudioId });
-
-      statusText.innerText = "狀態：連線成功！AI 已上線";
-    } catch (err) {
-      console.error(err);
-      statusText.innerText = "狀態：連線失敗";
-      alert("連線失敗：" + err.message);
-    }
-  });
+  // 綁定選單點擊事件
+  videoSelect.addEventListener('click', getDevices, { once: true });
+  audioSelect.addEventListener('click', getDevices, { once: true });
 });
