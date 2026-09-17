@@ -1,16 +1,19 @@
-// 初始化裝置選單
-document.addEventListener('DOMContentLoaded', async () => {
+// 自動尋找全域載入的 LiveKit 物件
+function getLiveKitSDK() {
+  return window.LiveKitClient || window.LivekitClient || window.LiveKit || (window.livekit ? window.livekit : null);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
   const videoSelect = document.getElementById('video-select');
   const audioSelect = document.getElementById('audio-select');
   const connectBtn = document.getElementById('connect-btn');
   const statusTxt = document.getElementById('status');
 
-  // 取得 LiveKit 引用（同時相容 UMD CDN 與本地加載）
-  const livekitSDK = window.LiveKitClient || window.LiveKit;
-
   async function getDevices() {
+    const livekitSDK = getLiveKitSDK();
+
     if (!livekitSDK) {
-      alert('LiveKit SDK 載入失敗，請檢查網路連線。');
+      alert('LiveKit SDK 載入中，請稍候 3 秒再試一次。');
       return;
     }
 
