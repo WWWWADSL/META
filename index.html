@@ -1,80 +1,43 @@
-// 請替換為你的 LiveKit WebSocket URL
-const LIVEKIT_URL = "wss://your-instance.livekit.cloud";
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Vision AI Assistant</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    body { background: #121212; color: #fff; font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 20px; }
+    button { background: #007aff; color: #fff; border: none; padding: 16px 32px; font-size: 18px; border-radius: 12px; margin-top: 20px; font-weight: bold; width: 80%; }
+    select { margin: 10px; padding: 12px; border-radius: 8px; width: 80%; font-size: 16px; background: #222; color: #fff; border: 1px solid #444; }
+    #status { margin-top: 15px; font-size: 14px; color: #aaa; }
+    audio { display: none; }
+  </style>
 
-let room;
+  <!-- 載入 LiveKit SDK 函式庫 -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+</head>
+<body>
+  <h2>👓 Vision AI Assistant</h2>
 
-// 觸發請求相機與麥克風權限，並載入選項清單
-async function loadDevices() {
-  const videoSelect = document.getElementById("video-select");
-  const audioSelect = document.getElementById("audio-select");
+  <label for="video-select">相機來源：</label><br>
+  <select id="video-select">
+    <option value="">請點擊選擇相機</option>
+  </select><br><br>
 
-  try {
-    // 先主動向使用者請求相機與麥克風權限（會跳出 iOS 授權彈窗）
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    
-    // 成功授權後取得裝置清單
-    const devices = await LiveKit.Room.getLocalDevices();
-    videoSelect.innerHTML = "";
-    audioSelect.innerHTML = "";
+  <label for="audio-select">麥克風來源：</label><br>
+  <select id="audio-select">
+    <option value="">請點擊選擇麥克風</option>
+  </select><br><br>
 
-    devices.forEach(device => {
-      const opt = document.createElement("option");
-      opt.value = device.deviceId;
-      opt.text = device.label || `${device.kind === 'videoinput' ? '相機' : '麥克風'} (${device.deviceId.slice(0, 5)})`;
-      if (device.kind === "videoinput") videoSelect.appendChild(opt);
-      if (device.kind === "audioinput") audioSelect.appendChild(opt);
-    });
+  <button id="connect-btn">連線至 AI 助理</button>
+  <p id="status">狀態：尚未連線</p>
 
-    // 關閉臨時抓取的串流以釋放鏡頭
-    stream.getTracks().forEach(track => track.stop());
-  } catch (err) {
-    alert("請確定已允許相機與麥克風權限：" + err.message);
-  }
-}
+  <audio id="remote-audio" autoplay></audio>
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 當使用者點擊選單時，自動載入裝置清單
-  document.getElementById("video-select").addEventListener("focus", loadDevices, { once: true });
-  document.getElementById("audio-select").addEventListener("focus", loadDevices, { once: true });
-});
-
-document.getElementById("connect-btn").addEventListener("click", async () => {
-  const statusEl = document.getElementById("status");
-  statusEl.innerText = "連線中...";
-
-  // 避免未載入裝置就連線
-  const selectedVideoId = document.getElementById("video-select").value;
-  const selectedAudioId = document.getElementById("audio-select").value;
-
-  if (!selectedVideoId) {
-    await loadDevices();
-  }
-
-  // 請填入你從 LiveKit 產生的 User Token
-  const token = "YOUR_LIVEKIT_USER_TOKEN";
-
-  room = new LiveKit.Room({
-    adaptiveStream: true,
-    dynacast: true,
-  });
-
-  room.on(LiveKit.RoomEvent.TrackSubscribed, (track, publication, participant) => {
-    if (track.kind === LiveKit.Track.Kind.Audio) {
-      const audioElement = document.getElementById("remote-audio");
-      track.attach(audioElement);
-    }
-  });
-
-  try {
-    await room.connect(LIVEKIT_URL, token);
-    statusEl.innerText = "已成功連線！AI 已上線。";
-
-    await room.localParticipant.enableCameraAndMicrophone({
-      video: { deviceId: document.getElementById("video-select").value, width: 1280, height: 720 },
-      audio: { deviceId: document.getElementById("audio-select").value }
-    });
-
-  } catch (err) {
-    statusEl.innerText = "連線失敗: " + err.message;
-  }
-});
+  <!-- 載入邏輯控制檔 -->
+  <script src="app.js"></script>
+</body>
+</html>
