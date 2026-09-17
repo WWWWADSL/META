@@ -16,8 +16,8 @@
     audio { display: none; }
   </style>
 
-  <!-- 載入 LiveKit SDK 函式庫 -->
-  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+  <!-- 更換為 unpkg 穩定來源的 LiveKit Client SDK -->
+  <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.min.js"></script>
 </head>
 <body>
   <h2>👓 Vision AI Assistant</h2>
@@ -37,7 +37,7 @@
 
   <audio id="remote-audio" autoplay></audio>
 
-  <!-- 載入邏輯控制檔 -->
-  <script src="app.js"></script>
+  <!-- 加上 defer 確保 LiveKit SDK 載入完成後才執行 app.js -->
+  <script src="app.js" defer></script>
 </body>
 </html>
