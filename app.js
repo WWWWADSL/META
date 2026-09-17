@@ -1,4 +1,3 @@
-// 確保 DOM 與外部 SDK 完全載入後才執行
 window.addEventListener('DOMContentLoaded', () => {
   const videoSelect = document.getElementById('video-select');
   const audioSelect = document.getElementById('audio-select');
@@ -8,19 +7,18 @@ window.addEventListener('DOMContentLoaded', () => {
   let currentRoom = null;
 
   async function getDevices() {
-    // 檢查 LiveKit SDK 是否順利載入
+    // 檢查本地的 LiveKit SDK 是否成功載入
     if (typeof LiveKit === 'undefined') {
-      alert("LiveKit SDK 正在載入中，請稍微重試一次。");
+      alert("livekit.js 尚未加載完成，請確認 livekit.js 已成功上傳至 GitHub 專案中。");
       return;
     }
 
     try {
-      // 請求相機與麥克風權限
+      // 主動請求相機與麥克風授權 (跳出 iOS 系統彈窗)
       await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       
       const devices = await LiveKit.Room.getLocalDevices();
       
-      // 清空原有選單選項
       videoSelect.innerHTML = '<option value="">請選擇相機</option>';
       audioSelect.innerHTML = '<option value="">請選擇麥克風</option>';
 
@@ -39,7 +37,7 @@ window.addEventListener('DOMContentLoaded', () => {
       statusText.innerText = "狀態：已取得裝置清單";
     } catch (err) {
       console.error(err);
-      alert("無法取得相機或麥克風權限：" + err.message);
+      alert("無法取得授權或裝置：" + err.message);
     }
   }
 
@@ -48,7 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   connectBtn.addEventListener('click', async () => {
     if (typeof LiveKit === 'undefined') {
-      alert("LiveKit SDK 未成功載入，請確認網路連線或重新整理頁面。");
+      alert("LiveKit SDK 未成功載入！");
       return;
     }
 
@@ -56,16 +54,16 @@ window.addEventListener('DOMContentLoaded', () => {
     const selectedAudioId = audioSelect.value;
 
     if (!selectedVideoId || !selectedAudioId) {
-      alert("請選擇相機與麥克風！");
+      alert("請先選擇相機與麥克風來源！");
       return;
     }
 
     statusText.innerText = "狀態：連線中...";
 
     try {
-      // 請替換為你的 LiveKit Token 取得 API 或測試 Token
-      const token = "YOUR_LIVEKIT_TOKEN_HERE";
+      // 請將下方填入你的 LiveKit Server WebSocket 網址與連接 Token
       const wsUrl = "wss://YOUR_LIVEKIT_SERVER_URL";
+      const token = "YOUR_LIVEKIT_TOKEN";
 
       const room = new LiveKit.Room();
       currentRoom = room;
@@ -79,11 +77,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
       await room.connect(wsUrl, token);
 
-      // 發布選定的影像與聲音軌道
       await room.localParticipant.setCameraEnabled(true, { deviceId: selectedVideoId });
       await room.localParticipant.setMicrophoneEnabled(true, { deviceId: selectedAudioId });
 
-      statusText.innerText = "狀態：連線成功！";
+      statusText.innerText = "狀態：連線成功！AI 已上線";
     } catch (err) {
       console.error(err);
       statusText.innerText = "狀態：連線失敗";
