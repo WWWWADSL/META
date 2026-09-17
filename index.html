@@ -16,8 +16,8 @@
     audio { display: none; }
   </style>
 
-  <!-- 自動抓取 LiveKit 最新穩定版（不指定版本號，避免找不到路徑） -->
-  <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.js"></script>
+  <!-- 修正：指定 LiveKit Client 完整 bundle 路徑 -->
+  <script src="https://unpkg.com/livekit-client@1.15.1/dist/livekit-client.umd.min.js"></script>
 </head>
 <body>
   <h2>👓 Vision AI Assistant</h2>
@@ -40,3 +40,4 @@
   <script src="app.js" defer></script>
 </body>
 </html>
+
