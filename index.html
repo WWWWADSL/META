@@ -16,8 +16,8 @@
     audio { display: none; }
   </style>
 
-  <!-- 修正：指定 LiveKit Client 完整 bundle 路徑 -->
-  <script src="https://unpkg.com/livekit-client@1.15.1/dist/livekit-client.umd.min.js"></script>
+  <!-- 直接引用上傳至專案根目錄的 livekit.js -->
+  <script src="livekit.js"></script>
 </head>
 <body>
   <h2>👓 Vision AI Assistant</h2>
@@ -37,7 +37,7 @@
 
   <audio id="remote-audio" autoplay></audio>
 
+  <!-- 確保 DOM 載入後執行主程式 -->
   <script src="app.js" defer></script>
 </body>
 </html>
-
