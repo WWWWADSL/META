@@ -16,8 +16,8 @@
     audio { display: none; }
   </style>
 
-  <!-- 直接引用上傳至專案根目錄的 livekit.js -->
-  <script src="livekit.js"></script>
+  <!-- 加上 ?v=1 強制讓 iPhone 讀取最新的 livekit.js，避開舊快取 -->
+  <script src="livekit.js?v=1"></script>
 </head>
 <body>
   <h2>👓 Vision AI Assistant</h2>
@@ -37,7 +37,6 @@
 
   <audio id="remote-audio" autoplay></audio>
 
-  <!-- 確保 DOM 載入後執行主程式 -->
   <script src="app.js" defer></script>
 </body>
 </html>
