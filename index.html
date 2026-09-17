@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Glasses AI Assistant</title>
+  <!-- PWA 相關設定 -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    body { background: #121212; color: #fff; font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 20px; }
+    button { background: #007aff; color: #fff; border: none; padding: 16px 32px; font-size: 18px; border-radius: 12px; margin-top: 20px; font-weight: bold; width: 80%; }
+    select { margin: 10px; padding: 8px; border-radius: 8px; width: 80%; font-size: 14px; }
+    #status { margin-top: 15px; font-size: 14px; color: #aaa; }
+    audio { display: none; }
+  </style>
+</head>
+<body>
+  <h2>👓 Vision AI Assistant</h2>
+
+  <!-- 裝置選擇選單 -->
+  <label>相機來源：</label><br>
+  <select id="video-select"></select><br>
+
+  <label>麥克風來源：</label><br>
+  <select id="audio-select"></select><br>
+
+  <button id="connect-btn">連線至 AI 助理</button>
+  <p id="status">狀態：尚未連線</p>
+
+  <!-- 播放 AI 回傳語音的隱藏元素 -->
+  <audio id="remote-audio" autoplay></audio>
+
+  <!-- 引入 LiveKit Web Client SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
