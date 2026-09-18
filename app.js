@@ -11,9 +11,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentRoom = null;
 
+  // 取得裝置列表函式
   async function getDevices() {
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       const devices = await navigator.mediaDevices.enumerateDevices();
       
       videoSelect.innerHTML = '<option value="">請選擇相機</option>';
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
       statusTxt.textContent = '狀態：已順利讀取鏡頭與麥克風列表';
     } catch (err) {
       console.error(err);
-      statusTxt.textContent = '狀態：無法取得裝置權限，請確認授權。';
+      statusTxt.textContent = '狀態：無法讀取裝置列表。';
     }
   }
 
@@ -50,34 +50,32 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    // 1. 強制請求相機與麥克風權限
+    try {
+      statusTxt.textContent = '狀態：正在請求媒體權限...';
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      // 取得權限後重新載入硬體選單
+      await getDevices();
+    } catch (err) {
+      console.error("無法取得權限：", err);
+      alert("請允許相機與麥克風權限才能進行連線！");
+      statusTxt.textContent = '狀態：未取得相機與麥克風權限。';
+      return;
+    }
+
     const selectedVideoId = videoSelect.value;
     const selectedAudioId = audioSelect.value;
 
-  // 請求相機與麥克風權限
-try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    // 取得權限後重新載入硬體選單
-    await populateDevices();
-} catch (err) {
-    console.error("無法取得權限：", err);
-    alert("請允許相機與麥克風權限才能進行連線！");
-    return;
-}
- 
-    }
-
-    statusTxt.textContent = '狀態：正在請求 AI 助理 Token...';
+    statusTxt.textContent = '狀態：正在準備連線設定...';
 
     try {
-      // 1. 直接指定 LiveKit 伺服器網址與連線 Token
-    const url = 'wss://my-project-qkcolvfe.livekit.cloud';
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoi
-bWV0YS12aXNpb24tcm9vbSIsImNhblB1Ymxpc2giOnRydWUsImNhblN1YnNjcmliZSI6dHJ1ZSwiY2FuUHVibGlzaERhdGEiOnRyd
-WV9LCJzdWIiOiJ1c2VyIiwiaXNzIjoiQVBJbW5tUDdMaHljMkg3IiwibmJmIjoxNzg5NzA0MTE2LCJleHAiOjE3ODk3MjU3MTZ9.tC3A8aOLKAiTnUC3qC8Ws-lfvynmHe_IZ7RcJjx9PwU';
+      // 2. 指定 LiveKit 伺服器網址與連線 Token
+      const url = 'wss://my-project-qkcolvfe.livekit.cloud';
+      const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoibWV0YS12aXNpb24tcm9vbSIsImNhblB1Ymxpc2giOnRydWUsImNhblN1YnNjcmliZSI6dHJ1ZSwiY2FuUHVibGlzaERhdGEiOnRydWV9LCJzdWIiOiJ1c2VyIiwiaXNzIjoiQVBJbW5tUDdMaHljMkg3IiwibmJmIjoxNzg5NzA0MTE2LCJleHAiOjE3ODk3MjU3MTZ9.tC3A8aOLKAiTnUC3qC8Ws-lfvynmHe_IZ7RcJjx9PwU';
 
       statusTxt.textContent = '狀態：正在連線至 LiveKit 房間...';
 
-      // 2. 建立 LiveKit Room 實體
+      // 3. 建立 LiveKit Room 實體
       const room = new livekitSDK.Room();
       currentRoom = room;
 
@@ -89,12 +87,15 @@ WV9LCJzdWIiOiJ1c2VyIiwiaXNzIjoiQVBJbW5tUDdMaHljMkg3IiwibmJmIjoxNzg5NzA0MTE2LCJle
         }
       });
 
-      // 3. 連線至 LiveKit 伺服器
+      // 4. 連線至 LiveKit 伺服器
       await room.connect(url, token);
 
-      // 4. 發布選定的相機與麥克风
-      await room.localParticipant.setCameraEnabled(true, { deviceId: selectedVideoId });
-      await room.localParticipant.setMicrophoneEnabled(true, { deviceId: selectedAudioId });
+      // 5. 發布選定的相機與麥克風 (若有選指定 ID 則帶入，否則啟動預設裝置)
+      const videoOptions = selectedVideoId ? { deviceId: selectedVideoId } : true;
+      const audioOptions = selectedAudioId ? { deviceId: selectedAudioId } : true;
+
+      await room.localParticipant.setCameraEnabled(true, videoOptions);
+      await room.localParticipant.setMicrophoneEnabled(true, audioOptions);
 
       statusTxt.textContent = '狀態：連線成功！AI 助理正在聆聽與分析中...';
       connectBtn.textContent = '斷開連線';
@@ -102,7 +103,7 @@ WV9LCJzdWIiOiJ1c2VyIiwiaXNzIjoiQVBJbW5tUDdMaHljMkg3IiwibmJmIjoxNzg5NzA0MTE2LCJle
 
     } catch (err) {
       console.error(err);
-      statusTxt.textContent = '狀態：連線失敗，請檢查後端 Token 伺服器網址。';
+      statusTxt.textContent = '狀態：連線失敗，請檢查網路或 Token 設定。';
     }
   });
 });
