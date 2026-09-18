@@ -53,9 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedVideoId = videoSelect.value;
     const selectedAudioId = audioSelect.value;
 
-    if (!selectedVideoId || !selectedAudioId) {
-      alert('請先選擇相機與麥克風來源！');
-      return;
+  // 請求相機與麥克風權限
+try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    // 取得權限後重新載入硬體選單
+    await populateDevices();
+} catch (err) {
+    console.error("無法取得權限：", err);
+    alert("請允許相機與麥克風權限才能進行連線！");
+    return;
+}
+ 
     }
 
     statusTxt.textContent = '狀態：正在請求 AI 助理 Token...';
