@@ -61,16 +61,11 @@ document.addEventListener('DOMContentLoaded', () => {
     statusTxt.textContent = '狀態：正在請求 AI 助理 Token...';
 
     try {
-      // 1. 向後端 Token 伺服器請求認證 (請確認後端 API 網址，範例預設使用本地/雲端後端)
-      // 若已有部署好的 Token API 網址，請更換下方的 URL
-      const response = await fetch('https://your-livekit-backend.com/api/get-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomName: 'meta-vision-room', participantName: 'user' })
-      });
-      
-      const data = await response.json();
-      const { url, token } = data; // 需包含 livekit ws 網址與 token
+      // 1. 直接指定 LiveKit 伺服器網址與連線 Token
+    const url = 'wss://my-project-qkcolvfe.livekit.cloud';
+    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidXNlciIsInZpZGVvIjp7InJvb21Kb2luIjp0cnVlLCJyb29tIjoi
+bWV0YS12aXNpb24tcm9vbSIsImNhblB1Ymxpc2giOnRydWUsImNhblN1YnNjcmliZSI6dHJ1ZSwiY2FuUHVibGlzaERhdGEiOnRyd
+WV9LCJzdWIiOiJ1c2VyIiwiaXNzIjoiQVBJbW5tUDdMaHljMkg3IiwibmJmIjoxNzg5NzA0MTE2LCJleHAiOjE3ODk3MjU3MTZ9.tC3A8aOLKAiTnUC3qC8Ws-lfvynmHe_IZ7RcJjx9PwU';
 
       statusTxt.textContent = '狀態：正在連線至 LiveKit 房間...';
 
